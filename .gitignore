@@ -1,4 +1,9 @@
 # Python
+#
+# NOTE: .python-version is pinned to 3.12 to match the interpreter available
+# on Vercel's Python build image (root pyproject.toml + uv.lock drive the
+# serverless dependency install). The local .venv/uv setup still works:
+# `uv sync` will build a 3.12 venv on next run if needed.
 __pycache__/
 *.py[cod]
 *$py.class
@@ -48,3 +53,5 @@ frontend/dist/
 bin/
 .uv-python/
 
+.vercel
+.env*

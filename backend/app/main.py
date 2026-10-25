@@ -6,11 +6,13 @@ and horizon degradation analysis.
 """
 
 from datetime import date, timedelta
+import os
 from typing import Optional
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import CUTOFF_HOUR_UTC
 from app.core.horizon import error_by_horizon
@@ -279,3 +281,16 @@ def get_accuracy_by_horizon(
     ]
 
     return HorizonResponse(start=start, end=end, buckets=buckets)
+
+
+# Serve the built SPA when it is bundled with the app (Vercel container-image
+# deploys via Dockerfile.vercel). Guarded by env so the serverless and
+# docker-compose deployments keep their nginx/CDN static serving instead.
+# The mount is registered last, so all /api/* routes keep priority.
+_FRONTEND_DIST = os.getenv("FRONTEND_DIST", "")
+if _FRONTEND_DIST and os.path.isdir(_FRONTEND_DIST):
+    app.mount(
+        "/",
+        StaticFiles(directory=_FRONTEND_DIST, html=True),
+        name="frontend",
+    )

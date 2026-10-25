@@ -1,0 +1,39 @@
+# Vercel container deployment (Dockerfile.vercel is Vercel's build hook:
+# the image must start ONE HTTP server listening on $PORT, default 80).
+#
+# One container serves everything, so the app works identically to
+# `docker compose up` without needing nginx as a second process:
+#   - FastAPI serves the /api routes
+#   - FastAPI also serves the built SPA (see the FRONTEND_DIST mount
+#     at the bottom of backend/app/main.py)
+#
+# ── Stage 1: build the frontend ──
+FROM node:20-alpine AS frontend
+WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# ── Stage 2: Python runtime (venv built in a throwaway stage) ──
+FROM python:3.11-slim AS build
+ENV PIP_NO_CACHE_DIR=1
+WORKDIR /build
+COPY backend/requirements.txt .
+RUN python -m venv /opt/venv \
+    && /opt/venv/bin/pip install --upgrade pip \
+    && /opt/venv/bin/pip install -r requirements.txt
+
+# ── Stage 3: runtime ──
+FROM python:3.11-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    DATA_DIR=/app/data \
+    CACHE_DIR=/tmp/data-cache \
+    FRONTEND_DIST=/app/ui
+COPY --from=build /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+WORKDIR /app
+COPY backend/app ./app
+COPY data ./data
+COPY --from=frontend /app/dist ./ui
+CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-80}"]

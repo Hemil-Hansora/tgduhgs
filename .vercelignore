@@ -11,4 +11,10 @@ frontend/dist
 bin
 .uv-python
 *.pyc
-
+# Hide the root Python project files: otherwise Vercel detects a FastAPI
+# *app* deployment and serves the backend at every path, ignoring the static
+# frontend. The serverless function intentionally uses api/requirements.txt.
+pyproject.toml
+uv.lock
+.python-version
+main.py
