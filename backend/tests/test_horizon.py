@@ -2,8 +2,7 @@
 
 import pandas as pd
 import pytest
-
-from app.core.horizon import error_by_horizon, DEFAULT_BUCKETS
+from app.core.horizon import DEFAULT_BUCKETS, error_by_horizon
 
 
 def _ts(s: str) -> pd.Timestamp:

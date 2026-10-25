@@ -9,6 +9,7 @@ MAX_LIVE_FETCH_DAYS, merges into cache, and writes back.
 
 from datetime import date, timedelta
 from pathlib import Path
+
 import pandas as pd
 
 from app.config import (
@@ -22,6 +23,7 @@ from app.elexon_client import fetch_forecasts as client_fetch_forecasts
 
 class RangeExceededError(ValueError):
     """Raised when an uncached range exceeds MAX_LIVE_FETCH_DAYS."""
+
     pass
 
 
@@ -98,7 +100,9 @@ class DataProvider:
         if self.actuals_df.empty:
             return pd.DataFrame(columns=["startTime", "generation"])
 
-        mask = (self.actuals_df["startTime"] >= start_ts) & (self.actuals_df["startTime"] < end_ts)
+        mask = (self.actuals_df["startTime"] >= start_ts) & (
+            self.actuals_df["startTime"] < end_ts
+        )
         return self.actuals_df[mask].copy().reset_index(drop=True)
 
     def _is_actuals_covered(self, start_ts: pd.Timestamp, end_ts: pd.Timestamp) -> bool:
@@ -151,7 +155,8 @@ class DataProvider:
             if not fetched_raw.empty:
                 # Keep target slots within the requested window
                 fetched = fetched_raw[
-                    (fetched_raw["startTime"] >= start_ts) & (fetched_raw["startTime"] < end_ts)
+                    (fetched_raw["startTime"] >= start_ts)
+                    & (fetched_raw["startTime"] < end_ts)
                 ].copy()
                 self.forecasts_df = self._merge_forecasts(fetched)
                 self._save_parquet("forecasts.parquet", self.forecasts_df)
@@ -159,10 +164,14 @@ class DataProvider:
         if self.forecasts_df.empty:
             return pd.DataFrame(columns=["startTime", "publishTime", "generation"])
 
-        mask = (self.forecasts_df["startTime"] >= start_ts) & (self.forecasts_df["startTime"] < end_ts)
+        mask = (self.forecasts_df["startTime"] >= start_ts) & (
+            self.forecasts_df["startTime"] < end_ts
+        )
         return self.forecasts_df[mask].copy().reset_index(drop=True)
 
-    def _is_forecasts_covered(self, start_ts: pd.Timestamp, end_ts: pd.Timestamp) -> bool:
+    def _is_forecasts_covered(
+        self, start_ts: pd.Timestamp, end_ts: pd.Timestamp
+    ) -> bool:
         """Return True if forecasts_df covers the target delivery range."""
         if self.forecasts_df.empty or "startTime" not in self.forecasts_df.columns:
             return False

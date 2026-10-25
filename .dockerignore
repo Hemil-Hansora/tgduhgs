@@ -1,0 +1,13 @@
+# Keep the backend build context (repo root) small
+.git
+.venv
+.agents
+.pytest_cache
+**/__pycache__
+frontend/node_modules
+frontend/dist
+docs
+bin
+.uv-python
+*.pyc
+

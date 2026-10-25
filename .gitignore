@@ -43,3 +43,8 @@ Thumbs.db
 # Frontend (for upcoming build)
 frontend/node_modules/
 frontend/dist/
+
+# Local tools
+bin/
+.uv-python/
+

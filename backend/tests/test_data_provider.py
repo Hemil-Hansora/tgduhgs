@@ -4,29 +4,35 @@ Tests for DataProvider cache behavior, fetch-on-miss, and range limits.
 
 from datetime import date
 from unittest.mock import patch
+
 import pandas as pd
 import pytest
-
 from app.data import DataProvider, RangeExceededError
 
 
 @pytest.fixture
 def mock_actuals():
     """Mock actuals DataFrame covering 2026-01-10 through 2026-01-12."""
-    dates = pd.date_range("2026-01-10 00:00:00", "2026-01-12 23:30:00", freq="30min", tz="UTC")
+    dates = pd.date_range(
+        "2026-01-10 00:00:00", "2026-01-12 23:30:00", freq="30min", tz="UTC"
+    )
     return pd.DataFrame({"startTime": dates, "generation": 5000})
 
 
 @pytest.fixture
 def mock_forecasts():
     """Mock forecasts DataFrame covering 2026-01-10 through 2026-01-12."""
-    target_dates = pd.date_range("2026-01-10 00:00:00", "2026-01-12 23:00:00", freq="1h", tz="UTC")
+    target_dates = pd.date_range(
+        "2026-01-10 00:00:00", "2026-01-12 23:00:00", freq="1h", tz="UTC"
+    )
     pub_dates = target_dates - pd.Timedelta(hours=15)
-    return pd.DataFrame({
-        "startTime": target_dates,
-        "publishTime": pub_dates,
-        "generation": 5200,
-    })
+    return pd.DataFrame(
+        {
+            "startTime": target_dates,
+            "publishTime": pub_dates,
+            "generation": 5200,
+        }
+    )
 
 
 def test_cache_hit_does_not_call_client(tmp_path, mock_actuals):
@@ -46,7 +52,9 @@ def test_cache_miss_fetches_once_and_caches(tmp_path, mock_actuals):
     provider = DataProvider(data_dir=tmp_path, cache_dir=tmp_path, max_live_days=7)
     assert provider.actuals_df.empty
 
-    with patch("app.data.client_fetch_actuals", return_value=mock_actuals) as mock_fetch:
+    with patch(
+        "app.data.client_fetch_actuals", return_value=mock_actuals
+    ) as mock_fetch:
         # First call: cache miss -> calls client
         res1 = provider.get_actuals(date(2026, 1, 10), date(2026, 1, 12))
         assert mock_fetch.call_count == 1

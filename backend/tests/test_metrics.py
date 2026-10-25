@@ -4,7 +4,6 @@ import math
 
 import pandas as pd
 import pytest
-
 from app.core.metrics import compute_metrics
 
 
@@ -42,12 +41,14 @@ class TestComputeMetrics:
 
     @pytest.fixture
     def df(self):
-        return _joined_df([
-            ("2026-01-10T00:00Z", 100, 80),
-            ("2026-01-10T01:00Z", 90, 100),
-            ("2026-01-10T02:00Z", 110, 110),
-            ("2026-01-10T03:00Z", 80, 60),
-        ])
+        return _joined_df(
+            [
+                ("2026-01-10T00:00Z", 100, 80),
+                ("2026-01-10T01:00Z", 90, 100),
+                ("2026-01-10T02:00Z", 110, 110),
+                ("2026-01-10T03:00Z", 80, 60),
+            ]
+        )
 
     def test_bias(self, df):
         m = compute_metrics(df)
@@ -84,11 +85,13 @@ class TestComputeMetrics:
 
     def test_with_nan_drops_and_counts(self):
         """Rows with NaN actual or forecast are dropped and counted."""
-        df = _joined_df([
-            ("2026-01-10T00:00Z", 100, 80),
-            ("2026-01-10T01:00Z", 90, float("nan")),
-            ("2026-01-10T02:00Z", float("nan"), 110),
-        ])
+        df = _joined_df(
+            [
+                ("2026-01-10T00:00Z", 100, 80),
+                ("2026-01-10T01:00Z", 90, float("nan")),
+                ("2026-01-10T02:00Z", float("nan"), 110),
+            ]
+        )
         m = compute_metrics(df)
         assert m["total_slots"] == 3
         assert m["dropped_slots"] == 2
@@ -97,10 +100,12 @@ class TestComputeMetrics:
 
     def test_no_positive_errors_buffer_is_zero(self):
         """If all errors are negative or zero, buffer should be 0."""
-        df = _joined_df([
-            ("2026-01-10T00:00Z", 80, 100),   # -20
-            ("2026-01-10T01:00Z", 100, 100),   # 0
-        ])
+        df = _joined_df(
+            [
+                ("2026-01-10T00:00Z", 80, 100),  # -20
+                ("2026-01-10T01:00Z", 100, 100),  # 0
+            ]
+        )
         m = compute_metrics(df)
         assert m["buffer_mw"] == pytest.approx(0.0)
 

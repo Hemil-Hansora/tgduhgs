@@ -9,8 +9,8 @@ near zero blows it up.
 
 import math
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def compute_metrics(joined: pd.DataFrame) -> dict:
@@ -44,7 +44,9 @@ def compute_metrics(joined: pd.DataFrame) -> dict:
     mean_actual = clean["actual"].mean()
 
     positive_errors = error[error > 0]
-    buffer = float(np.percentile(positive_errors, 90)) if len(positive_errors) > 0 else 0.0
+    buffer = (
+        float(np.percentile(positive_errors, 90)) if len(positive_errors) > 0 else 0.0
+    )
 
     return {
         "mae_mw": float(mae),
@@ -53,7 +55,9 @@ def compute_metrics(joined: pd.DataFrame) -> dict:
         "p50_abs_error_mw": float(abs_error.quantile(0.50)),
         "p90_abs_error_mw": float(abs_error.quantile(0.90)),
         "p95_abs_error_mw": float(abs_error.quantile(0.95)),
-        "mae_pct_of_mean_actual": float(mae / mean_actual * 100) if mean_actual != 0 else 0.0,
+        "mae_pct_of_mean_actual": float(mae / mean_actual * 100)
+        if mean_actual != 0
+        else 0.0,
         "buffer_mw": buffer,
         "total_slots": total,
         "dropped_slots": dropped,

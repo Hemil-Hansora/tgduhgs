@@ -5,6 +5,7 @@ All timestamps are formatted as ISO 8601 UTC strings.
 """
 
 from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 

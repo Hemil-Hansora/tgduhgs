@@ -1,0 +1,14 @@
+# Keep the Vercel upload small — these are never needed at runtime.
+# data/, backend/ and frontend sources stay, so the function bundle and
+# static build both work.
+.git
+.venv
+.agents
+.pytest_cache
+**/__pycache__
+frontend/node_modules
+frontend/dist
+bin
+.uv-python
+*.pyc
+

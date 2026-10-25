@@ -1,11 +1,29 @@
 {
   "version": 1,
   "skills": {
+    "anti-ai-slop-ui": {
+      "source": "rwcod/anti-ai-slop-ui",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "f4cd7c30f7b851dabf070cd732def357cf5732781678dc2667af501370baa7b9"
+    },
+    "chart-designer": {
+      "source": "claude-office-skills/skills",
+      "sourceType": "github",
+      "skillPath": "chart-designer/SKILL.md",
+      "computedHash": "6d69766f465bea4e2836a35c93e75b322cc236a5266ae1e50f2ff851c494699c"
+    },
     "ponytail": {
       "source": "dietrichgebert/ponytail",
       "sourceType": "github",
       "skillPath": "skills/ponytail/SKILL.md",
       "computedHash": "061f887d9e3e735f85db3be3655a8936a00f24d5fb65ac4ab74a968a770fe342"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "27b1e8c953e26f962e3314281601959b04787edf3fd7fccadce176ff844c688d"
     }
   }
 }

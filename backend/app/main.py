@@ -7,9 +7,10 @@ and horizon degradation analysis.
 
 from datetime import date, timedelta
 from typing import Optional
+
+import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
 
 from app.config import CUTOFF_HOUR_UTC
 from app.core.horizon import error_by_horizon
@@ -75,7 +76,9 @@ def get_metadata() -> MetaResponse:
         selected = select_forecasts(forecasts, CUTOFF_HOUR_UTC)
         aligned = align_actuals_to_hourly(actuals)
         merged = pd.merge(selected, aligned, on="startTime", how="outer")
-        dropped_count = int(merged["generation_x"].isna().sum() + merged["generation_y"].isna().sum())
+        dropped_count = int(
+            merged["generation_x"].isna().sum() + merged["generation_y"].isna().sum()
+        )
 
     return MetaResponse(
         cutoff_rule=f"Latest forecast published <= {CUTOFF_HOUR_UTC:02d}:00 UTC on D-1 for delivery on day D",
@@ -91,7 +94,7 @@ def get_metadata() -> MetaResponse:
 
 @app.get("/api/forecast", response_model=ForecastResponse)
 def get_forecast(
-    target_date: str = Query(..., description="Target delivery date (YYYY-MM-DD)")
+    target_date: str = Query(..., description="Target delivery date (YYYY-MM-DD)"),
 ) -> ForecastResponse:
     """
     Return selected wind forecast for each hourly delivery slot of target_date.
@@ -102,7 +105,9 @@ def get_forecast(
     try:
         t_date = date.fromisoformat(target_date)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid target_date format. Expected YYYY-MM-DD.")
+        raise HTTPException(
+            status_code=400, detail="Invalid target_date format. Expected YYYY-MM-DD."
+        )
 
     next_date = t_date + timedelta(days=1)
 
@@ -115,7 +120,9 @@ def get_forecast(
         raise HTTPException(status_code=500, detail=f"Failed to load data: {exc}")
 
     selected = select_forecasts(forecasts, cutoff_hour_utc=CUTOFF_HOUR_UTC)
-    aligned_actuals = align_actuals_to_hourly(actuals) if not actuals.empty else pd.DataFrame()
+    aligned_actuals = (
+        align_actuals_to_hourly(actuals) if not actuals.empty else pd.DataFrame()
+    )
 
     if not aligned_actuals.empty:
         merged = pd.merge(
@@ -137,12 +144,18 @@ def get_forecast(
                 forecast_mw=float(row["generation"]),
                 publishTime=row["publishTime"].isoformat(),
                 cutoff=row["cutoff"].isoformat(),
-                actual_mw=float(row["generation_actual"]) if pd.notna(row.get("generation_actual")) else None,
+                actual_mw=float(row["generation_actual"])
+                if pd.notna(row.get("generation_actual"))
+                else None,
             )
         )
 
-    earliest_pub = selected["publishTime"].min().isoformat() if not selected.empty else None
-    latest_pub = selected["publishTime"].max().isoformat() if not selected.empty else None
+    earliest_pub = (
+        selected["publishTime"].min().isoformat() if not selected.empty else None
+    )
+    latest_pub = (
+        selected["publishTime"].max().isoformat() if not selected.empty else None
+    )
 
     return ForecastResponse(
         target_date=target_date,
@@ -166,10 +179,14 @@ def get_accuracy(
         start_d = date.fromisoformat(start)
         end_d = date.fromisoformat(end)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Expected YYYY-MM-DD.")
+        raise HTTPException(
+            status_code=400, detail="Invalid date format. Expected YYYY-MM-DD."
+        )
 
     if start_d >= end_d:
-        raise HTTPException(status_code=400, detail="Start date must be strictly before end date.")
+        raise HTTPException(
+            status_code=400, detail="Start date must be strictly before end date."
+        )
 
     try:
         forecasts = data_provider.get_forecasts(start_d, end_d)
@@ -183,8 +200,12 @@ def get_accuracy(
     aligned_actuals = align_actuals_to_hourly(actuals)
 
     joined = pd.merge(
-        selected[["startTime", "generation"]].rename(columns={"generation": "forecast"}),
-        aligned_actuals[["startTime", "generation"]].rename(columns={"generation": "actual"}),
+        selected[["startTime", "generation"]].rename(
+            columns={"generation": "forecast"}
+        ),
+        aligned_actuals[["startTime", "generation"]].rename(
+            columns={"generation": "actual"}
+        ),
         on="startTime",
         how="inner",
     )
@@ -227,10 +248,14 @@ def get_accuracy_by_horizon(
         start_d = date.fromisoformat(start)
         end_d = date.fromisoformat(end)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Expected YYYY-MM-DD.")
+        raise HTTPException(
+            status_code=400, detail="Invalid date format. Expected YYYY-MM-DD."
+        )
 
     if start_d >= end_d:
-        raise HTTPException(status_code=400, detail="Start date must be strictly before end date.")
+        raise HTTPException(
+            status_code=400, detail="Start date must be strictly before end date."
+        )
 
     try:
         forecasts = data_provider.get_forecasts(start_d, end_d)

@@ -7,7 +7,6 @@ the buyer whether short-range forecasts are meaningfully better.
 """
 
 import pandas as pd
-import numpy as np
 
 # (lower_bound_inclusive, upper_bound_exclusive, label)
 DEFAULT_BUCKETS: list[tuple[float, float, str]] = [

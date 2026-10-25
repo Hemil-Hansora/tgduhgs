@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      # 8001 on the host so it never collides with the dev uvicorn on 8000
+      - "8001:8000"
+    environment:
+      CUTOFF_HOUR_UTC: "9"
+      DATA_DIR: /app/data
+      CACHE_DIR: /tmp/data-cache
+      MAX_LIVE_FETCH_DAYS: "7"
+
+  frontend:
+    build: ./frontend
+    ports:
+      # 3000 on the host (8080 is taken by another local container)
+      - "3000:80"
+    depends_on:
+      - backend
