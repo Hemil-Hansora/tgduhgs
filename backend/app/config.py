@@ -16,10 +16,16 @@ MAX_LIVE_FETCH_DAYS: int = int(os.getenv("MAX_LIVE_FETCH_DAYS", "7"))
 
 # Default project paths
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
+BACKEND_ROOT = Path(__file__).resolve().parent.parent
+
+# Check backend/data first (for self-contained Vercel backend service), then root data/
+if (BACKEND_ROOT / "data").exists():
+    DEFAULT_DATA_DIR = BACKEND_ROOT / "data"
+else:
+    DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
 
 DATA_DIR: Path = Path(os.getenv("DATA_DIR", str(DEFAULT_DATA_DIR)))
-CACHE_DIR: Path = Path(os.getenv("CACHE_DIR", str(DATA_DIR)))
+CACHE_DIR: Path = Path(os.getenv("CACHE_DIR", "/tmp/data-cache" if os.getenv("VERCEL") else str(DATA_DIR)))
 
 # Default decision and target evaluation window (January 2026)
 DEFAULT_DECISION_START: date = date(2026, 1, 1)

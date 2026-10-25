@@ -10,7 +10,7 @@ import os
 from typing import Optional
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import APIRouter, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -49,14 +49,17 @@ app.add_middleware(
 # Global data provider instance
 data_provider = DataProvider()
 
+# APIRouter allows routes to be accessed at both /api/... and /...
+router = APIRouter()
 
-@app.get("/api/health", response_model=HealthResponse)
+
+@router.get("/health", response_model=HealthResponse)
 def health_check() -> HealthResponse:
     """Service health probe."""
     return HealthResponse(status="ok")
 
 
-@app.get("/api/meta", response_model=MetaResponse)
+@router.get("/meta", response_model=MetaResponse)
 def get_metadata() -> MetaResponse:
     """Return system configuration, available target dates, and cache stats."""
     forecasts = data_provider.forecasts_df
@@ -94,7 +97,7 @@ def get_metadata() -> MetaResponse:
     )
 
 
-@app.get("/api/forecast", response_model=ForecastResponse)
+@router.get("/forecast", response_model=ForecastResponse)
 def get_forecast(
     target_date: str = Query(..., description="Target delivery date (YYYY-MM-DD)"),
 ) -> ForecastResponse:
@@ -169,7 +172,7 @@ def get_forecast(
     )
 
 
-@app.get("/api/accuracy", response_model=AccuracyResponse)
+@router.get("/accuracy", response_model=AccuracyResponse)
 def get_accuracy(
     start: str = Query(..., description="Start target date YYYY-MM-DD (inclusive)"),
     end: str = Query(..., description="End target date YYYY-MM-DD (exclusive)"),
@@ -236,7 +239,7 @@ def get_accuracy(
     )
 
 
-@app.get("/api/accuracy/horizon", response_model=HorizonResponse)
+@router.get("/accuracy/horizon", response_model=HorizonResponse)
 def get_accuracy_by_horizon(
     start: str = Query(..., description="Start target date YYYY-MM-DD (inclusive)"),
     end: str = Query(..., description="End target date YYYY-MM-DD (exclusive)"),
@@ -281,6 +284,12 @@ def get_accuracy_by_horizon(
     ]
 
     return HorizonResponse(start=start, end=end, buckets=buckets)
+
+
+# Mount router at both /api (standard external contract) and / (service-internal)
+app.include_router(router, prefix="/api")
+app.include_router(router)
+
 
 
 # Serve the built SPA when it is bundled with the app (Vercel container-image
